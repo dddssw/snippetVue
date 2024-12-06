@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "target": "ES6", // 编译成 ES6，或更高版本（ES2020）
+    "module": "ESNext", // 使用 ES模块格式
+    "allowJs": true,
+    "noImplicitAny": false,
+    "emitDeclarationOnly": false,
+    "declaration": true,
+    "declarationDir": "./dist/types/",
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+  },
+   "files": ["src/index.ts","src/tools.ts"],
+}

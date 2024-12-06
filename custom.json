@@ -1,0 +1,6 @@
+{
+  "routerPath": "@/router/constant.ts",
+  "pagePath":"@/views",
+  "apiPath":"@/api",
+  "tsDeclarationPath":"@/api"
+}
