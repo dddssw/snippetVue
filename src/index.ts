@@ -1,6 +1,7 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { execa } from "execa";
+import { res } from "./constant/res";
 import {
   rawlist,
   input,
@@ -8,6 +9,7 @@ import {
   Separator,
   number,
   confirm,
+  search,
 } from "@inquirer/prompts";
 import {
   getConfigure,
@@ -26,6 +28,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 const program = new Command();
+import elComponents, { operate } from "./constant/component";
 /*
 选择需要插入的位置（末尾）
 多选：需要哪些字段，含children会进入递归
@@ -118,7 +121,11 @@ program
         "-------------------------路由表已更新--------------------------"
       )
     );
-    const packagePath = path.join(fileURLToPath(import.meta.url),'../../', "package.json");
+    const packagePath = path.join(
+      fileURLToPath(import.meta.url),
+      "../../",
+      "package.json"
+    );
     let packageJson;
     let order;
     if (fs.existsSync(packagePath)) {
@@ -137,11 +144,9 @@ program
       });
       if (needPage) {
         //@ts-ignore
-        await execa(order,["addp", "-d", ...Array.from(pageSet)],
-          {
-            stdio: "inherit", // 将当前终端的输入、输出流继承给子进程
-          }
-        );
+        await execa(order, ["addp", "-d", ...Array.from(pageSet)], {
+          stdio: "inherit", // 将当前终端的输入、输出流继承给子进程
+        });
       }
     }
     async function createApiRequestPage() {
@@ -154,13 +159,9 @@ program
           message: "输入路由path",
           required: true,
         });
-        await execa(
-          order,
-          ["addp", "-d", path.join(apiPath, pagePath)],
-          {
-            stdio: "inherit", // 将当前终端的输入、输出流继承给子进程
-          }
-        );
+        await execa(order, ["addp", "-d", path.join(apiPath, pagePath)], {
+          stdio: "inherit", // 将当前终端的输入、输出流继承给子进程
+        });
       }
     }
     async function createTsDeclarationPage() {
@@ -175,11 +176,7 @@ program
         });
         await execa(
           order,
-          [
-            "addp",
-            "-d",
-            path.join(tsDeclarationPath, pagePath),
-          ],
+          ["addp", "-d", path.join(tsDeclarationPath, pagePath)],
           {
             stdio: "inherit", // 将当前终端的输入、输出流继承给子进程
           }
@@ -321,5 +318,24 @@ program
   .action((str, options) => {
     const pathArr = options._optionValues.data;
     createFile(pathArr);
+  });
+program
+  .command("el")
+  .description("生成elementplus的组件模板")
+  .action(async (str, options) => {
+    const component = await search({
+      message: "选择要生成的组件",
+      source: async (input, { signal }) => {
+        if (!input) {
+          return elComponents;
+        }
+        signal;
+        return elComponents.filter((item) => item.name.includes(input));
+      },
+    });
+    const data = await operate[component]();
+    console.log(data.template);
+    fs.writeFileSync("./file.js", JSON.stringify(data.template), "utf-8");
+    //  console.log(data.template);
   });
 program.parse();

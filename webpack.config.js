@@ -30,7 +30,7 @@ const config = {
       raw: true, // 保证 banner 中的内容不会被处理成字符串
       entryOnly: true, // 只在入口文件的打包结果中添加
     }),
-    new BundleAnalyzerPlugin(),
+    // new BundleAnalyzerPlugin(),
   ],
   resolve: {
     extensions: [".ts", ".js", ".json"],
