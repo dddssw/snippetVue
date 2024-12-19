@@ -12,5 +12,6 @@ export declare const operate: {
     "el-checkbox-group": () => Promise<any>;
     "el-form": () => Promise<any>;
     "el-form-item": () => Promise<any>;
-    "el-table": () => Promise<void>;
+    "el-table": () => Promise<any>;
+    "el-table-column": () => Promise<any>;
 };

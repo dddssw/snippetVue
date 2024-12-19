@@ -15,6 +15,7 @@ const elComponents = [
   { name: "el-form 表单", value: "el-form" },
   { name: "el-form-item", value: "el-form-item" },
   { name: "el-table 列表", value: "el-table" },
+  { name: "el-table-column", value: "el-table-column" },
 ];
 function getOrder() {
   const packagePath = path.join(
@@ -219,6 +220,75 @@ const dialogChoices = [
     name: ":before-close 绑定一个函数，关闭前的回调，会暂停 Dialog 的关闭. 回调函数内执行 done 参数方法的时候才是真正关闭对话框的时候.(done)=>{done()}",
   },
 ];
+const tableChoices = [
+  { name: "ref", value: "ref" },
+  { value: ":data", name: ":data 数据源" },
+  {
+    value: "show-overflow-tooltip",
+    name: "show-overflow-tooltip 超出悬浮展示全部",
+  },
+  {
+    value: ":row-style",
+    name: "row-style 行的 style 的回调方法，也可以使用一个固定的 Object 为所有行设置一样的 Style。函数参数是row",
+  },
+  {
+    value: ":row-class-name",
+    name: "row-class-name 行的 className 的回调方法，也可以使用字符串为所有行设置一个固定的 className。函数参数是row",
+  },
+  {
+    value: ":default-sort",
+    name: "default-sort 设置默认的排序列和排序顺序",
+  },
+  {
+    value: "@row-click",
+    name: "@row-click 点击某一行触发，参数是这一行的数据",
+  },
+  {
+    value: "@sort-change",
+    name: "@sort-change 后端排序，表格的排序条件发生变化的时候会触发该事件",
+  },
+  {
+    value: "@select",
+    name: "@select 多选时手动勾选数据行的 Checkbox 时触发的事件",
+  },
+  {
+    value: "@select-all",
+    name: "@select-all 多选时勾选全选 Checkbox 时触发的事件",
+  },
+];
+const tableColumnChoices = [
+  {
+    name: "是否需要默认插槽",
+    value: "defaultSlot",
+  },
+  {
+    name: "prop",
+    value: "prop",
+  },
+  {
+    name: "label",
+    value: "label",
+  },
+  {
+    name: "width",
+    value: "width",
+  },
+  {
+    name: "sortable  如果需要后端排序，需将 sortable 设置为 custom，同时在 Table 上监听 sort-change 事件",
+    value: "sortable",
+  },
+];
+const functionTemplate = {
+  "@select": `{
+  let selected = selection.length && selection.indexOf(row) !== -1 // true就是选中，0或者false是取消选中
+}`,
+  "@select-all": `{
+  const isSelectAll = multipleTableRef.value.store.states.isAllSelected// isSelectAll为true就是全选，false是全不选
+}`,
+};
+function generFunction(key, value) {
+  return `function ${value}${functionTemplate[key]}`;
+}
 //要修改的对象，子组件名，父组件名是否有group el-select el-checkbox el-radio
 async function configureGroupItem(data, name, group = true) {
   console.log(
@@ -322,15 +392,37 @@ function attrAnalyse(res): any {
   let functionValue = [];
 
   Object.entries(res).forEach(([key, value], index, array) => {
+    if (key === "defaultSlot") {
+      return;
+    }
     if (
-      (key === "v-model" || key === ":model" || key === "ref") &&
+      (key === "v-model" ||
+        key === ":model" ||
+        key === ":data" ||
+        key === "ref") &&
       !(value as string).includes(".")
     ) {
       modelValue.push(`const ${value} = ref()`);
     }
     if (key.startsWith("@")) {
-      functionValue.push(`function ${value} {
+      if (key in functionTemplate) {
+        functionValue.push(generFunction(key, value));
+      } else {
+        functionValue.push(`function ${value} {
+        ${
+          key === "@sort-change"
+            ? ` console.log(column)
+  if (column.prop === 'modifyTime') {
+    if (!column.order) {
+     
+    } else {
+
+    }
+  }`
+            : ""
+        }
             }`);
+      }
       attributes += `${key}="${(value as string).replace(/\([^\)]*\)/g, "")}"`;
       return;
     }
@@ -551,9 +643,65 @@ export const operate = {
     data.template = data.template.replace(/\\n/g, "\n");
     return data;
   },
-  "el-table":async ()=>{
-
+  "el-table": async () => {
+    const res = await configureComponent("el-table", tableChoices);
+    const data = attrAnalyse(res);
+    let itemData = [];
+    while (true) {
+      const cur = await operate["el-table-column"]();
+      itemData.push(cur.template);
+      const answer = await confirm({
+        message: "是否添加下一个el-table-column？",
+        default: true,
+      });
+      if (!answer) {
+        break;
+      }
+    }
+    const needMulit = await confirm({
+      message: "是否需要多选功能，可以通过multipleSelection知道选中了哪些数据",
+      default: false,
+    });
+    const disabled = await confirm({ message: "是否选项需要禁用多选",default:false });
+    if(needMulit){
+        itemData.unshift(
+          ` <el-table-column type="selection" width="55" ${disabled?':selectable="isDisabledSelect}"':''} />`
+        );
+        if(disabled){
+            data.functionValue.push(`function isDisabledSelect(row) {
+  if (row.status === 10) {
+    return true
   }
+}`);
+        }
+        data.modelValue.push(`const multipleSelection = ref([])`);
+         data.functionValue.push(`function handleSelectionChange(val) {
+  multipleSelection.value = val
+}`);
+    }
+    const itemCode = itemData.map((item) => item).join("\n");
+    data.template = `<el-table
+     ${needMulit?'@selection-change="handleSelectionChange"':''}${data.attributes}
+     ${itemCode}
+     ><el-table />`;
+    return data;
+  },
+  "el-table-column": async () => {
+    const res = await configureComponent("el-table-column", tableColumnChoices);
+    const data = attrAnalyse(res);
+    if ("defaultSlot" in res) {
+      data.template = `<el-table-column 
+     ${data.attributes}>
+      <template #default="{ row }">
+       
+        </template>
+        </el-table-column>
+     `;
+    } else {
+      data.template = `<el-table-column ${data.attributes} />`;
+    }
+    return data;
+  },
 };
 const dealAttr = {
   "v-model": async () => {
@@ -580,6 +728,9 @@ const dealAttr = {
   label: async () => {
     return await input({ message: "输入label" });
   },
+  prop: async () => {
+    return await input({ message: "输入prop" });
+  },
   rules: async () => {
     return await input({ message: "输入rules表单校验规则", default: "rules" });
   },
@@ -593,7 +744,7 @@ const dealAttr = {
     return await input({ message: "输入label-width", default: "auto" });
   },
   ":before-close": async () => {
-    return await input({ message: "输入:before-close的回调函数"});
+    return await input({ message: "输入:before-close的回调函数" });
   },
   "active-text": async () => {
     return await input({ message: "输入开启展示的文本", default: "已启用" });
@@ -631,8 +782,8 @@ const dealAttr = {
   "inline-prompt": async () => {
     return await confirm({ message: "图标是否在switch内部" });
   },
-  "close-on-click-modal":async ()=>{
-    return false
+  "close-on-click-modal": async () => {
+    return false;
   },
   "before-change": async () => {
     return await input({
@@ -643,6 +794,36 @@ const dealAttr = {
   maxlength: async () => {
     return await input({ message: "输入maxlength", default: "100" });
   },
+  ":row-style": async () => {
+    return await input({ message: "输入:row-style", default: "{height:60px}" });
+  },
+  ":row-class-name": async () => {
+    return await input({
+      message: "输入row-class-name",
+      default: "tableRowClassName",
+    });
+  },
+  ":default-sort": async () => {
+    return await input({
+      message: "输入默认的排序",
+      required: true,
+      default: "{ prop: 'modifyTime', order: 'descending' }",
+    });
+  },
+  "@sort-change": async () => {
+    return await input({
+      message: "输入后端排序函数",
+      required: true,
+      default: "handleSortChange",
+    });
+  },
+  "@row-click": async () => {
+    return await input({
+      message: "输入点击某一行触发的事件",
+      required: true,
+      default: "rowClick",
+    });
+  },
   "@input": async () => {
     return await input({ message: "@input输入事件", required: true });
   },
@@ -651,6 +832,20 @@ const dealAttr = {
   },
   "@close": async () => {
     return await input({ message: "@close事件", required: true });
+  },
+  "@select": async () => {
+    return await input({
+      message: "@selct事件",
+      required: true,
+      default: "itemHandleSelectionChange(selection, row)",
+    });
+  },
+  "@select-all": async () => {
+    return await input({
+      message: "@select-all事件",
+      required: true,
+      default: "handleSelectAll()",
+    });
   },
   "@keydown.enter": async () => {
     return await input({
@@ -677,11 +872,4 @@ const dealAttr = {
       ],
     });
   },
-  disabled: async () => {
-    //为空不展示数据即可
-    return await input({ message: "输入disabled" });
-  },
-  //   isString: async () => {
-  //     await confirm({ message: "属性值是string类型吗?",default:true });
-  //   },
 };
