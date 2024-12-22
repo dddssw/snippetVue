@@ -434,13 +434,13 @@ function throttle(func, duration) {
     ];
     consoleInfo(list, "watch/computed 的区别");
   },
-  "defineProperty/proxy":() =>{
-   const list = [
-     "使用defineProperty是因为当时proxy兼容性不好",
-     "defineProperty只能劫持对象属性的getter和setter，并且无法监听会修改原数组的数组方法，所以对这些方法就行重写",
-     "proxy能直接劫持整个对象",
-     "可以直接监听对象，数组的变化，并且拦截类型多达13种",
-   ];
+  "defineProperty/proxy": () => {
+    const list = [
+      "使用defineProperty是因为当时proxy兼容性不好",
+      "defineProperty只能劫持对象属性的getter和setter，并且无法监听会修改原数组的数组方法，所以对这些方法就行重写",
+      "proxy能直接劫持整个对象",
+      "可以直接监听对象，数组的变化，并且拦截类型多达13种",
+    ];
     consoleInfo(list, "defineProperty/proxy 的区别");
   },
   data: () => {
@@ -491,6 +491,158 @@ function throttle(func, duration) {
     ];
     consoleInfo(list, "scoped");
   },
+  动态规划: () => {
+    const list = [
+      "dp[i]代表什么:前i个的结果或者是以第i个结束的结果",
+      "需要注意如果有n个数据,要加上0的情况所以需要拿到dp[n],注意下标,不要取错了值",
+    ];
+  },
+  "0/1背包": () => {
+    const list = [
+      "都需要两层for循环,一层循环物品,一层循环背包(从0开始)",
+      "二维:dp[i][j]代表从从第0~i个物品中选满足重量j的最大价值",
+      "dp[i][j]=Math.max(dp[i-1][j],d[[i-1][j-weight[i]]+value[i]])",
+      "一维:dp[j]代表从容量为j的最大价值,为什么能用一维,可以看上当前层只依赖上一层,dp[i]=Math.max(dp[i],dp[i-weight[i]]+value[i]",
+      "循环背包时逆序,因为只跟上方和左上方的数据有关,这个时候不能提前更新它",
+    ];
+    
+  },
+  "完全背包":()=>{
+    const list =[
+      "两层for循环,先全部赋初始值.在内层for循环中不断更新dp[i]"
+    ]
+    consoleInfo(list,'完全背包')
+    const codeSnippet = `var wordBreak = function(s, wordDict) {
+    let dp=new Array(s.length+1).fill(false)
+    dp[0]=true
+    for(let i=1;i<=s.length;i++){
+       for(let j=0;j<wordDict.length;j++){
+        let cur = wordDict[j]
+        if(i-cur.length>=0&&s.slice(i-cur.length,i)===cur){
+            dp[i]=dp[i]||dp[i-cur.length]
+        }
+       }
+    }
+    return dp[s.length]
+};`;
+    highlightCode(codeSnippet);
+  },
+  js基本数据类型有哪些及它们的区别: () => {
+    const list = [
+      "js有八种数据类型,分别是null,undefined,number,string,boolean,object,symbol,bigint",
+      "symbol和bigint是es6新增的,symbol是为了创建一个独一无二的数据,解决可能出现的全局变量冲突的问题",
+      "js的number类型是基于IEEE754标准,最大可以表示的数是2^53-1,超过这个范围精度会丢失,bigint能表示任意大小的数,不会出现精度丢失",
+      "这些数据可以分为原始数据类型和引用数据类型",
+      "两种类型的区别在于存储位置的不同,原始数据类型放在栈中,引用数据类型放在堆中.但是在栈中会存放指向堆的指针",
+    ];
+  },
+  数据类型检测的方式有哪些: () => {
+    const list = [
+      "typeof",
+      "typeof null 的结果为 object,这是官方承认的 typeof 的错误，这个问题来自于 JavaScript 语言的早期阶段，并为了兼容性而保留了下来。null 绝对不是一个 object。null 有自己的类型，它是一个特殊值。typeof 的行为在这里是错误的。",
+      "typeof alert 按理应该是返回 object。但是 typeof 会对函数区分对待，并返回 function。这也是来自于 JavaScript 语言早期的问题。从技术上讲，这种行为是不正确的，但在实际编程中却非常方便。",
+      "instanceof,其内部运行机制是判断在其原型链中能否找到该类型的原型,只能正确判断引用数据类型，而不能判断基本数据类型",
+    ];
+  },
+  this: () => {
+    const list = [
+      "指向当前执行上下文中的 执行环境 或 函数调用的上下文",
+      "箭头函数的写法更简洁,箭头函数没有this,继承与外部词法环境,不能被修改,没有arguments,不能成为构造函数",
+    ];
+  },
+  "原型":()=>{
+    const list = [
+      "对象有一个特殊的隐藏属性prototype,它要么为null,要么就是另一个对象的引用,该对象被称为原型",
+      "属性 [[Prototype]] 是内部的而且是隐藏的,但是使用特殊的名字 __proto__ 可以设置它",
+      "当访问一个对象的属性,如果没找到就会到原型里找,原型里又有它的原型,这样一直寻找,就是一条原型链,原型链的终点是null"
+    ];
+  },
+  "闭包":()=>{
+    const list = ["闭包 是指一个函数可以记住其外部变量并可以访问这些变量",
+      "例如防抖节流函数",
+      "注意内存泄漏"
+    ];
+  },
+  "内存泄漏":()=>{
+    const list =[
+      "意外的全局变量",
+      "闭包",
+      "定时器",
+      "没有清理的dom引用"
+    ]
+  },
+  "var,let,const":()=>{
+    const list = [
+      "let const 有块级作用域,var没有",
+      "var允许重复声明",
+      "使用var声明的全局函数和变量会成为全局对象的属性",
+      "var声明会被提升,,但是赋值不会,let const有暂时性死区",
+      "const必须设置初始值,const声明之后不能重新赋值"
+    ]
+  },
+  new:()=>{
+    const list = [
+      "创建一个空对象分配给this",
+      "执行函数体,通常会修改this",
+      "返回this"
+    ]
+  },
+  "es6":()=>{
+    const list =[
+      "let const",
+      "箭头函数",
+      "解构赋值",
+      "模版字符串",
+      "promise",
+      "扩展运算符",
+    ]
+  },
+  "promise":()=>{
+    const codeSnippet = 
+      `//ajax改造成promise
+      function ajax(url) {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+
+    // 设置请求成功的回调
+    xhr.onload = function() {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(xhr.responseText); // 请求成功，返回响应内容
+      } else {
+        reject(new Error()); // 请求失败
+      }
+    };
+
+    // 设置请求失败的回调
+    xhr.onerror = function() {
+      reject(new Error('Network error')); // 网络错误
+    };
+
+    // 发送请求
+    xhr.send();
+  });
+}
+
+// 使用 Promise 的方式进行调用
+ajax('https://api.example.com/data')
+  .then(response => {
+    console.log('Success:', response);
+  })
+  .catch(error => {
+    console.log('Error:', error);
+  });
+`
+     highlightCode(codeSnippet);
+  },
+  "null/undefined":()=>{
+const list = [
+  "基本是同义的,只有一些细微的差别,null表示此处不应该有值,undefined表示此处应该有一个值,只是没有定义",
+  "所以访问一个不存在的对象属性返回是undefined",
+  "在双等检查中返回true,除此之外,它们在双等检查中不会进行隐式转换"
+]
+consoleInfo(list,'null undefined的区别')
+  }
 };
 function consoleInfo(list, name) {
   const totalLength = 80;
