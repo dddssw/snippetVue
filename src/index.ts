@@ -408,12 +408,12 @@ function throttle(func, duration) {
       "所以我就想到了mock数据,接口定好协议我们前端的工作就可以很顺利的展开了",
       "选型上可以使用第三方平台或者我们的文档就是用yapi,它也支持mock数据的功能",
     ];
-    const list2=[
-"大文件上传",
-"通过上传组件我们可以拿到一个file文件,它继承blob,blob提供了一个slice方法,使用这个方法将大文件切片",
-"接下来为文件生成hash,为了防止阻塞,放在了web worker里执行,使用spark-md5以增量方式生成hash",
-"将hash和文件"
-    ]
+    const list2 = [
+      "大文件上传",
+      "通过上传组件我们可以拿到一个file文件,它继承blob,blob提供了一个slice方法,使用这个方法将大文件切片",
+      "接下来为文件生成hash,为了防止阻塞,放在了web worker里执行,使用spark-md5以增量方式生成hash",
+      "将hash和文件",
+    ];
   },
   "vue2/vue3": () => {
     const list = [
