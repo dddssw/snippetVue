@@ -393,6 +393,28 @@ function throttle(func, duration) {
 `;
     highlightCode(codeSnippet);
   },
+  难点: () => {
+    const list = [
+      "ui有一个要求,希望我们的搜索结果里把搜索词高亮显示.",
+      "开始我们找到一个支持vue3的包来进行高亮显示,但是对于组件库里的组件实现高亮这个包就无能为力了,为此不得不使用原生dom设置innerhtml",
+      "这样一来场景不同,实现高亮的方法也不同,而且原生操作很麻烦,第三方库使用起来也有点麻烦.",
+      "所以为了统一高亮的实现方案,我花了一些时间研究,发现web api有相关的高亮方法.",
+      "在项目中实验可行,因为我们有三个项目都需要统一规范,所以使用 Webpack 打包成一个 npm 包，方便团队共享，并且未来在其他项目中也能复用",
+    ];
+    const list1 = [
+      "前后端联调时间短:之前我们的联调时间比较充裕,这个问题没有暴露出来.",
+      "但是这个项目开始是跨科室协作的,而且前期工作量大.导致排期的时候联调时间是被大大压缩的",
+      "我们前端主要就是拿到后端给的数据渲染页面,先让我们的页面展示出来,也方便我们完善ui.",
+      "所以我就想到了mock数据,接口定好协议我们前端的工作就可以很顺利的展开了",
+      "选型上可以使用第三方平台或者我们的文档就是用yapi,它也支持mock数据的功能",
+    ];
+    const list2=[
+"大文件上传",
+"通过上传组件我们可以拿到一个file文件,它继承blob,blob提供了一个slice方法,使用这个方法将大文件切片",
+"接下来为文件生成hash,为了防止阻塞,放在了web worker里执行,使用spark-md5以增量方式生成hash",
+"将hash和文件"
+    ]
+  },
   "vue2/vue3": () => {
     const list = [
       "重构了响应式系统，性能优化，和Api的改进",
@@ -505,13 +527,10 @@ function throttle(func, duration) {
       "一维:dp[j]代表从容量为j的最大价值,为什么能用一维,可以看上当前层只依赖上一层,dp[i]=Math.max(dp[i],dp[i-weight[i]]+value[i]",
       "循环背包时逆序,因为只跟上方和左上方的数据有关,这个时候不能提前更新它",
     ];
-    
   },
-  "完全背包":()=>{
-    const list =[
-      "两层for循环,先全部赋初始值.在内层for循环中不断更新dp[i]"
-    ]
-    consoleInfo(list,'完全背包')
+  完全背包: () => {
+    const list = ["两层for循环,先全部赋初始值.在内层for循环中不断更新dp[i]"];
+    consoleInfo(list, "完全背包");
     const codeSnippet = `var wordBreak = function(s, wordDict) {
     let dp=new Array(s.length+1).fill(false)
     dp[0]=true
@@ -550,56 +569,51 @@ function throttle(func, duration) {
       "箭头函数的写法更简洁,箭头函数没有this,继承与外部词法环境,不能被修改,没有arguments,不能成为构造函数",
     ];
   },
-  "原型":()=>{
+  原型: () => {
     const list = [
       "对象有一个特殊的隐藏属性prototype,它要么为null,要么就是另一个对象的引用,该对象被称为原型",
       "属性 [[Prototype]] 是内部的而且是隐藏的,但是使用特殊的名字 __proto__ 可以设置它",
-      "当访问一个对象的属性,如果没找到就会到原型里找,原型里又有它的原型,这样一直寻找,就是一条原型链,原型链的终点是null"
+      "当访问一个对象的属性,如果没找到就会到原型里找,原型里又有它的原型,这样一直寻找,就是一条原型链,原型链的终点是null",
     ];
   },
-  "闭包":()=>{
-    const list = ["闭包 是指一个函数可以记住其外部变量并可以访问这些变量",
-      "例如防抖节流函数",
-      "注意内存泄漏"
+  闭包: () => {
+    const list = [
+      "闭包 是指一个函数可以记住其外部变量并可以访问这些变量",
+      "例如防抖节流函数,科里化",
+      "注意内存泄漏",
     ];
   },
-  "内存泄漏":()=>{
-    const list =[
-      "意外的全局变量",
-      "闭包",
-      "定时器",
-      "没有清理的dom引用"
-    ]
+  内存泄漏: () => {
+    const list = ["意外的全局变量", "闭包", "定时器", "没有清理的dom引用"];
   },
-  "var,let,const":()=>{
+  "var,let,const": () => {
     const list = [
       "let const 有块级作用域,var没有",
       "var允许重复声明",
       "使用var声明的全局函数和变量会成为全局对象的属性",
       "var声明会被提升,,但是赋值不会,let const有暂时性死区",
-      "const必须设置初始值,const声明之后不能重新赋值"
-    ]
+      "const必须设置初始值,const声明之后不能重新赋值",
+    ];
   },
-  new:()=>{
+  new: () => {
     const list = [
       "创建一个空对象分配给this",
       "执行函数体,通常会修改this",
-      "返回this"
-    ]
+      "返回this",
+    ];
   },
-  "es6":()=>{
-    const list =[
+  es6: () => {
+    const list = [
       "let const",
       "箭头函数",
       "解构赋值",
       "模版字符串",
       "promise",
       "扩展运算符",
-    ]
+    ];
   },
-  "promise":()=>{
-    const codeSnippet = 
-      `//ajax改造成promise
+  promise: () => {
+    const codeSnippet = `//ajax改造成promise
       function ajax(url) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -632,17 +646,17 @@ ajax('https://api.example.com/data')
   .catch(error => {
     console.log('Error:', error);
   });
-`
-     highlightCode(codeSnippet);
+`;
+    highlightCode(codeSnippet);
   },
-  "null/undefined":()=>{
-const list = [
-  "基本是同义的,只有一些细微的差别,null表示此处不应该有值,undefined表示此处应该有一个值,只是没有定义",
-  "所以访问一个不存在的对象属性返回是undefined",
-  "在双等检查中返回true,除此之外,它们在双等检查中不会进行隐式转换"
-]
-consoleInfo(list,'null undefined的区别')
-  }
+  "null/undefined": () => {
+    const list = [
+      "基本是同义的,只有一些细微的差别,null表示此处不应该有值,undefined表示此处应该有一个值,只是没有定义",
+      "所以访问一个不存在的对象属性返回是undefined,而不是null",
+      "在双等检查中返回true,除此之外,它们在双等检查中不会进行隐式转换",
+    ];
+    consoleInfo(list, "null undefined的区别");
+  },
 };
 function consoleInfo(list, name) {
   const totalLength = 80;
