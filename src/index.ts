@@ -29,6 +29,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 const program = new Command();
 import elComponents, { operate } from "./constant/component";
+
 /*
 选择需要插入的位置（末尾）
 多选：需要哪些字段，含children会进入递归
@@ -495,6 +496,7 @@ function throttle(func, duration) {
     const list = [
       "dp[i]代表什么:前i个的结果或者是以第i个结束的结果",
       "需要注意如果有n个数据,要加上0的情况所以需要拿到dp[n],注意下标,不要取错了值",
+      "对于最简单的动态规划，尽可能补全初始值，直到判断不了，复杂的可能需要两个for循环",
     ];
   },
   "0/1背包": () => {
@@ -505,13 +507,26 @@ function throttle(func, duration) {
       "一维:dp[j]代表从容量为j的最大价值,为什么能用一维,可以看上当前层只依赖上一层,dp[i]=Math.max(dp[i],dp[i-weight[i]]+value[i]",
       "循环背包时逆序,因为只跟上方和左上方的数据有关,这个时候不能提前更新它",
     ];
-    
+    consoleInfo(list, "0/1背包");
+    const codeSnippet = ` let dp=new Array(target+1).fill(false)
+    dp[0]=true
+    for(let i=0;i<nums.length;i++){
+      for(let j=target;j>=nums[i];j--){
+        dp[j]=dp[j]||dp[j-nums[i]]
+      }
+    }
+    return dp[target]`;
+    highlightCode(codeSnippet);
   },
-  "完全背包":()=>{
-    const list =[
-      "两层for循环,先全部赋初始值.在内层for循环中不断更新dp[i]"
-    ]
-    consoleInfo(list,'完全背包')
+  完全背包: () => {
+    const list = [
+      "初始化bp数组，长度是背包value+1,设置初始值",
+      "let dp = new Array(amount + 1).fill(Infinity)",
+      "dp[0] = 0;",
+      "两层for循环，外层循环背包，i从1开始，取值要注意减一，内层循环物品，满足条件，进行判断dp[i]=dp[i]||dp[i-cur.length]",
+      "注意i，j不要用混了，length不要拼写错误",
+    ];
+    consoleInfo(list, "完全背包");
     const codeSnippet = `var wordBreak = function(s, wordDict) {
     let dp=new Array(s.length+1).fill(false)
     dp[0]=true
@@ -550,56 +565,51 @@ function throttle(func, duration) {
       "箭头函数的写法更简洁,箭头函数没有this,继承与外部词法环境,不能被修改,没有arguments,不能成为构造函数",
     ];
   },
-  "原型":()=>{
+  原型: () => {
     const list = [
       "对象有一个特殊的隐藏属性prototype,它要么为null,要么就是另一个对象的引用,该对象被称为原型",
       "属性 [[Prototype]] 是内部的而且是隐藏的,但是使用特殊的名字 __proto__ 可以设置它",
-      "当访问一个对象的属性,如果没找到就会到原型里找,原型里又有它的原型,这样一直寻找,就是一条原型链,原型链的终点是null"
+      "当访问一个对象的属性,如果没找到就会到原型里找,原型里又有它的原型,这样一直寻找,就是一条原型链,原型链的终点是null",
     ];
   },
-  "闭包":()=>{
-    const list = ["闭包 是指一个函数可以记住其外部变量并可以访问这些变量",
+  闭包: () => {
+    const list = [
+      "闭包 是指一个函数可以记住其外部变量并可以访问这些变量",
       "例如防抖节流函数",
-      "注意内存泄漏"
+      "注意内存泄漏",
     ];
   },
-  "内存泄漏":()=>{
-    const list =[
-      "意外的全局变量",
-      "闭包",
-      "定时器",
-      "没有清理的dom引用"
-    ]
+  内存泄漏: () => {
+    const list = ["意外的全局变量", "闭包", "定时器", "没有清理的dom引用"];
   },
-  "var,let,const":()=>{
+  "var,let,const": () => {
     const list = [
       "let const 有块级作用域,var没有",
       "var允许重复声明",
       "使用var声明的全局函数和变量会成为全局对象的属性",
       "var声明会被提升,,但是赋值不会,let const有暂时性死区",
-      "const必须设置初始值,const声明之后不能重新赋值"
-    ]
+      "const必须设置初始值,const声明之后不能重新赋值",
+    ];
   },
-  new:()=>{
+  new: () => {
     const list = [
       "创建一个空对象分配给this",
       "执行函数体,通常会修改this",
-      "返回this"
-    ]
+      "返回this",
+    ];
   },
-  "es6":()=>{
-    const list =[
+  es6: () => {
+    const list = [
       "let const",
       "箭头函数",
       "解构赋值",
       "模版字符串",
       "promise",
       "扩展运算符",
-    ]
+    ];
   },
-  "promise":()=>{
-    const codeSnippet = 
-      `//ajax改造成promise
+  promise: () => {
+    const codeSnippet = `//ajax改造成promise
       function ajax(url) {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
@@ -632,17 +642,17 @@ ajax('https://api.example.com/data')
   .catch(error => {
     console.log('Error:', error);
   });
-`
-     highlightCode(codeSnippet);
+`;
+    highlightCode(codeSnippet);
   },
-  "null/undefined":()=>{
-const list = [
-  "基本是同义的,只有一些细微的差别,null表示此处不应该有值,undefined表示此处应该有一个值,只是没有定义",
-  "所以访问一个不存在的对象属性返回是undefined",
-  "在双等检查中返回true,除此之外,它们在双等检查中不会进行隐式转换"
-]
-consoleInfo(list,'null undefined的区别')
-  }
+  "null/undefined": () => {
+    const list = [
+      "基本是同义的,只有一些细微的差别,null表示此处不应该有值,undefined表示此处应该有一个值,只是没有定义",
+      "所以访问一个不存在的对象属性返回是undefined",
+      "在双等检查中返回true,除此之外,它们在双等检查中不会进行隐式转换",
+    ];
+    consoleInfo(list, "null undefined的区别");
+  },
 };
 function consoleInfo(list, name) {
   const totalLength = 80;
