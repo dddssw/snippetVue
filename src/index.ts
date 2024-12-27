@@ -29,6 +29,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 const program = new Command();
 import elComponents, { operate } from "./constant/component";
+import { dirname } from "path";
 
 /*
 选择需要插入的位置（末尾）
@@ -317,7 +318,8 @@ program
   .description("新增页面")
   .option("-d, --data [datas...]", "如果覆盖文件")
   .action((str, options) => {
-    const pathArr = options._optionValues.data;
+    console.log(options);
+    const pathArr = options.data;
     createFile(pathArr);
   });
 program
@@ -326,6 +328,7 @@ program
   .action(async (str, options) => {
     const component = await search({
       message: "选择要生成的组件",
+      pageSize: elComponents.length,
       source: async (input, { signal }) => {
         if (!input) {
           return elComponents;
@@ -336,8 +339,9 @@ program
     });
     const data = await operate[component]();
     console.log(data.template);
-    fs.writeFileSync("./file.js", JSON.stringify(data.template), "utf-8");
-    console.log(data.template);
+    fs.writeFileSync(path.join(dirname(fileURLToPath(import.meta.url)), "../", "file.js"), JSON.stringify(data.template), "utf-8");
+    const filePath = path.join(process.cwd(), "tempTemplateData.js");
+    fs.writeFileSync(filePath, JSON.stringify(data));
   });
 program
   .command("info")
