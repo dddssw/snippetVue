@@ -1,7 +1,8 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { execa } from "execa";
-import { highlightCode } from "./constant/printCode";
+import { highlightCode } from "./utils/printCode";
+import { minDistance } from "./utils/minStep";
 import {
   rawlist,
   input,
@@ -10,6 +11,7 @@ import {
   number,
   confirm,
   search,
+  select
 } from "@inquirer/prompts";
 import {
   getConfigure,
@@ -28,7 +30,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 const program = new Command();
-import elComponents, { operate } from "./constant/component";
+import elComponents, { operate } from "./utils/component";
 import { dirname } from "path";
 
 /*
@@ -339,7 +341,11 @@ program
     });
     const data = await operate[component]();
     console.log(data.template);
-    fs.writeFileSync(path.join(dirname(fileURLToPath(import.meta.url)), "../", "file.js"), JSON.stringify(data.template), "utf-8");
+    fs.writeFileSync(
+      path.join(dirname(fileURLToPath(import.meta.url)), "../", "file.js"),
+      JSON.stringify(data.template),
+      "utf-8"
+    );
     const filePath = path.join(process.cwd(), "tempTemplateData.js");
     fs.writeFileSync(filePath, JSON.stringify(data));
   });
@@ -348,7 +354,31 @@ program
   .description("信息")
   .argument("<string>", "查询什么")
   .action(async (str, options) => {
-    infoData[str]();
+    if (str in infoData) {
+      infoData[str]();
+    } else {
+      const keys = Object.keys(infoData).filter((item) => item.includes(str));
+      let res = [];
+      keys.forEach((item, index) => {
+        const step = minDistance(str, item);
+        res.push({ step, index });
+      });
+      res.sort((a, b) => a.step - b.step);
+      res=res.slice(0,3)
+      console.log(
+        chalk.yellow(`Warning: "${str}" is not found.`)
+      ); 
+      res = res.map((item) => ({
+        name: keys[item.index],
+        value: keys[item.index],
+      }));
+      // console.log('do you mean')
+      const anawer = await select({
+        message: "do you mean",
+        choices: res,
+      });
+       infoData[anawer as string]();
+    }
   });
 const infoData = {
   tableexpose: async () => {
@@ -657,7 +687,7 @@ ajax('https://api.example.com/data')
     ];
     consoleInfo(list, "null undefined的区别");
   },
-  "":()=>{
+  "": () => {
     const list = [
       "发现有一些可以公用的方法每个人都单独实现了，造成了项目体积无意义的膨胀。分析了几个原因",
       "其他人压根不知道已经有实现这个功能的方法",
@@ -667,23 +697,23 @@ ajax('https://api.example.com/data')
       "也考虑使用正则，但是太过繁琐，因为导出语法有几种。而且不是很踏实",
       "最后发现使用babel解析出ast，然后在分析这个树，可以获得导出的内容",
       "然后根据获取到的数据在插件中递归渲染一个树视图，得益于ast额外提供的注释节点，位置信息",
-      "鼠标悬浮即可显示注释，点击可以跳转文件并自动滚动到导出内容并高亮"
+      "鼠标悬浮即可显示注释，点击可以跳转文件并自动滚动到导出内容并高亮",
     ];
-    const list1=[
+    const list1 = [
       "解决路由表路由子信息meta数据冗余问题，有的时候新增一个路由，只是从别的位置简单的复制粘贴",
       "导致meta出现一些无意义的数据，而且了解这些meta属性是需要一定时间的",
       "在此基础上，创建完路由还需要创建页面",
       "所以使用脚手架来解决这个问题，基本思路是解析路由表，选择节点位置插入新路由，配置路由表，里面会有相关属性的描述。",
       "自动更新路由表，选择模板文件并生成，生成文件是抽离注册成另一个命令",
-    ]
-    const list2=[
+    ];
+    const list2 = [
       "有的时候需要在全局查找一些最佳实践，例如我注册了一个指令，只允许输入全角。我想要用这个指令，不得不切换上下文来查找其他使用到的地方并复制粘贴。",
       "在例如使用组件，需要在template写模板，然后滚动到script注册变量函数。",
       "",
       "",
       "",
-    ]
-  }
+    ];
+  },
 };
 function consoleInfo(list, name) {
   const totalLength = 80;
