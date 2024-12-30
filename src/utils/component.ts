@@ -1,7 +1,7 @@
 import { checkbox, input, number, confirm, select } from "@inquirer/prompts";
 import chalk from "chalk";
 import { execa } from "execa";
-import fs from "fs";
+import * as fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
@@ -17,7 +17,7 @@ const elComponents = [
   { name: "el-table 列表", value: "el-table" },
   { name: "el-table-column", value: "el-table-column" },
 ];
-function getOrder() {
+async function getOrder() {
   const packagePath = path.join(
     fileURLToPath(import.meta.url),
     "../../../",
@@ -25,11 +25,12 @@ function getOrder() {
   );
   let packageJson;
   let order;
-  if (fs.existsSync(packagePath)) {
-    packageJson = JSON.parse(fs.readFileSync(packagePath, "utf-8"));
-  }
-  order = Object.keys(packageJson.bin)[0];
-  return order;
+  try {
+    await fs.access(packagePath);
+    packageJson = JSON.parse(await fs.readFile(packagePath, "utf-8"));
+    order = Object.keys(packageJson.bin)[0];
+    return order;
+  } catch (err) {}
 }
 export default elComponents;
 const inputChoices = [
@@ -446,7 +447,7 @@ export const operate = {
     const data = attrAnalyse(res);
     data.template = `<el-input 
      ${data.attributes}
-     ><el-input />`;
+     ></el-input>`;
     return data;
   },
   "el-switch": async () => {
@@ -454,7 +455,7 @@ export const operate = {
     const data = attrAnalyse(res);
     data.template = `<el-switch 
      ${data.attributes}
-     ><el-switch />`;
+     ></el-switch>`;
     return data;
   },
   "el-dialog": async () => {
@@ -471,7 +472,7 @@ export const operate = {
         </el-button>
       </div>
     </template>
-     <el-dialog />`;
+     </el-dialog>`;
     return data;
   },
   "el-select": async () => {
@@ -578,9 +579,9 @@ export const operate = {
     }
     const itemCode = itemData.map((item) => item).join("\n");
     data.template = `<el-form
-     ${data.attributes}
+     ${data.attributes}>
      ${itemCode}
-     ><el-form />`;
+     </el-form>`;
     if ("rules" in res) {
       const answer = await confirm({
         message:
@@ -629,14 +630,15 @@ export const operate = {
         `-------------------------开始配置el-form-item插槽---------------------------`
       )
     );
+    const order =await getOrder();
     //@ts-ignore
-    await execa("node", ["bin/main.js", "el"], {
+    await execa(order, ["el"], {
       stdio: "inherit",
     });
-    let child = fs.readFileSync(
-      path.join(dirname(fileURLToPath(import.meta.url)), "../../", "file.js")
+    let child = await fs.readFile(
+      path.join(dirname(fileURLToPath(import.meta.url)), "../../", "file.js"),'utf-8'
     );
-    let replace = child.toString().replace(/"/g, "");
+    let replace = JSON.parse(child);
     data.template = `<el-form-item  ${data.attributes}>
     ${replace}
     </el-form-item>`;
@@ -662,28 +664,35 @@ export const operate = {
       message: "是否需要多选功能，可以通过multipleSelection知道选中了哪些数据",
       default: false,
     });
-    const disabled = await confirm({ message: "是否选项需要禁用多选",default:false });
-    if(needMulit){
-        itemData.unshift(
-          ` <el-table-column type="selection" width="55" ${disabled?':selectable="isDisabledSelect}"':''} />`
-        );
-        if(disabled){
-            data.functionValue.push(`function isDisabledSelect(row) {
+    const disabled = await confirm({
+      message: "是否选项需要禁用多选",
+      default: false,
+    });
+    if (needMulit) {
+      itemData.unshift(
+        ` <el-table-column type="selection" width="55" ${
+          disabled ? ':selectable="isDisabledSelect}"' : ""
+        } />`
+      );
+      if (disabled) {
+        data.functionValue.push(`function isDisabledSelect(row) {
   if (row.status === 10) {
     return true
   }
 }`);
-        }
-        data.modelValue.push(`const multipleSelection = ref([])`);
-         data.functionValue.push(`function handleSelectionChange(val) {
+      }
+      data.modelValue.push(`const multipleSelection = ref([])`);
+      data.functionValue.push(`function handleSelectionChange(val) {
   multipleSelection.value = val
 }`);
     }
     const itemCode = itemData.map((item) => item).join("\n");
     data.template = `<el-table
-     ${needMulit?'@selection-change="handleSelectionChange"':''}${data.attributes}
+     ${needMulit ? '@selection-change="handleSelectionChange"' : ""}${
+      data.attributes
+    }
      ${itemCode}
-     ><el-table />`;
+     ></el-table>`;
     return data;
   },
   "el-table-column": async () => {

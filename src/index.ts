@@ -1,7 +1,8 @@
 import { Command } from "commander";
 import chalk from "chalk";
 import { execa } from "execa";
-import { highlightCode } from "./constant/printCode";
+import { highlightCode } from "./utils/printCode";
+import { minDistance } from "./utils/minStep";
 import {
   rawlist,
   input,
@@ -10,6 +11,7 @@ import {
   number,
   confirm,
   search,
+  select
 } from "@inquirer/prompts";
 import {
   getConfigure,
@@ -28,7 +30,8 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 const program = new Command();
-import elComponents, { operate } from "./constant/component";
+import elComponents, { operate } from "./utils/component";
+import { dirname } from "path";
 
 /*
 选择需要插入的位置（末尾）
@@ -317,7 +320,8 @@ program
   .description("新增页面")
   .option("-d, --data [datas...]", "如果覆盖文件")
   .action((str, options) => {
-    const pathArr = options._optionValues.data;
+    console.log(options);
+    const pathArr = options.data;
     createFile(pathArr);
   });
 program
@@ -326,6 +330,7 @@ program
   .action(async (str, options) => {
     const component = await search({
       message: "选择要生成的组件",
+      pageSize: elComponents.length,
       source: async (input, { signal }) => {
         if (!input) {
           return elComponents;
@@ -336,15 +341,44 @@ program
     });
     const data = await operate[component]();
     console.log(data.template);
-    fs.writeFileSync("./file.js", JSON.stringify(data.template), "utf-8");
-    console.log(data.template);
+    fs.writeFileSync(
+      path.join(dirname(fileURLToPath(import.meta.url)), "../", "file.js"),
+      JSON.stringify(data.template),
+      "utf-8"
+    );
+    const filePath = path.join(process.cwd(), "tempTemplateData.js");
+    fs.writeFileSync(filePath, JSON.stringify(data));
   });
 program
   .command("info")
   .description("信息")
   .argument("<string>", "查询什么")
   .action(async (str, options) => {
-    infoData[str]();
+    if (str in infoData) {
+      infoData[str]();
+    } else {
+      const keys = Object.keys(infoData).filter((item) => item.includes(str));
+      let res = [];
+      keys.forEach((item, index) => {
+        const step = minDistance(str, item);
+        res.push({ step, index });
+      });
+      res.sort((a, b) => a.step - b.step);
+      res=res.slice(0,3)
+      console.log(
+        chalk.yellow(`Warning: "${str}" is not found.`)
+      ); 
+      res = res.map((item) => ({
+        name: keys[item.index],
+        value: keys[item.index],
+      }));
+      // console.log('do you mean')
+      const anawer = await select({
+        message: "do you mean",
+        choices: res,
+      });
+       infoData[anawer as string]();
+    }
   });
 const infoData = {
   tableexpose: async () => {
@@ -568,6 +602,16 @@ function throttle(func, duration) {
       "一维:dp[j]代表从容量为j的最大价值,为什么能用一维,可以看上当前层只依赖上一层,dp[i]=Math.max(dp[i],dp[i-weight[i]]+value[i]",
       "循环背包时逆序,因为只跟上方和左上方的数据有关,这个时候不能提前更新它",
     ];
+    consoleInfo(list, "0/1背包");
+    const codeSnippet = ` let dp=new Array(target+1).fill(false)
+    dp[0]=true
+    for(let i=0;i<nums.length;i++){
+      for(let j=target;j>=nums[i];j--){
+        dp[j]=dp[j]||dp[j-nums[i]]
+      }
+    }
+    return dp[target]`;
+    highlightCode(codeSnippet);
   },
   完全背包: () => {
     const list = [
