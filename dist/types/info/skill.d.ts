@@ -3,6 +3,8 @@ export declare const infoData: {
     validTable: () => Promise<void>;
     debounce: () => void;
     throttle: () => void;
+    难点: () => void;
+    虚拟列表: () => void;
     "vue2/vue3": () => void;
     "watch/watcheffect": () => void;
     "ref/reactive": () => void;
@@ -26,5 +28,7 @@ export declare const infoData: {
     es6: () => void;
     promise: () => void;
     "null/undefined": () => void;
-    "": () => void;
+    key: () => void;
+    "ref/reactive\u5B9E\u73B0\u539F\u7406\u533A\u522B": () => void;
+    "get/post": () => void;
 };
