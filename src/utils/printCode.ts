@@ -15,3 +15,19 @@ export function highlightCode(code) {
     .replace(/\b(timeout|func|args|duration)\b/g, variableStyle("$1")) // 高亮变量
     .replace(/(['"].*?['"])/g, stringStyle("$1"))); // 高亮字符串
 }
+export function consoleInfo(list, name) {
+  const totalLength = 80;
+  const nameLine = ` ${name} `;
+  const sideLength = Math.floor((totalLength - nameLine.length) / 2);
+  const fullLine = "=".repeat(totalLength);
+  const nameLineWithPadding =
+    "=".repeat(sideLength) +
+    nameLine +
+    "=".repeat(totalLength - sideLength - nameLine.length);
+
+  console.log(chalk.blue(nameLineWithPadding));
+  list.forEach((item, index) => {
+    console.log(chalk.bold(`[${index + 1}]`) + chalk.bold.black(` ${item}`));
+  });
+  console.log(chalk.blue(fullLine));
+}
