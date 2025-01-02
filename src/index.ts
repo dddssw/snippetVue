@@ -12,7 +12,7 @@ import {
   number,
   confirm,
   search,
-  select
+  select,
 } from "@inquirer/prompts";
 import {
   getConfigure,
@@ -365,10 +365,8 @@ program
         res.push({ step, index });
       });
       res.sort((a, b) => a.step - b.step);
-      res=res.slice(0,3)
-      console.log(
-        chalk.yellow(`Warning: "${str}" is not found.`)
-      ); 
+      res = res.slice(0, 3);
+      console.log(chalk.yellow(`Warning: "${str}" is not found.`));
       res = res.map((item) => ({
         name: keys[item.index],
         value: keys[item.index],
@@ -377,7 +375,7 @@ program
         message: "do you mean",
         choices: res,
       });
-       infoData[anawer as string]();
+      infoData[anawer as string]();
     }
   });
 program
