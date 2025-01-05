@@ -389,7 +389,7 @@ ajax('https://api.example.com/data')
     ];
     consoleInfo(list, "get/post的区别");
   },
-  "vite为什么比webpack快":()=>{
+  vite为什么比webpack快: () => {
     const list = [
       "浏览器开始原生支持 ES 模块，且越来越多 JavaScript 工具使用编译型语言编写。",
       "更快的开发服务器启动",
@@ -403,26 +403,64 @@ ajax('https://api.example.com/data')
     ];
     consoleInfo(list, "vite为什么比webpack快");
   },
-  "热更新":()=>{
+  热更新: () => {
     const list = [
       "通过websocket实现浏览器与服务器的通信，当文件修改之后，通知浏览器修改相应代码",
-    ]
-    consoleInfo(list,'热更新')
+    ];
+    consoleInfo(list, "热更新");
   },
-  "依赖预构建":()=>{
+  依赖预构建: () => {
     const list = [
       "利用esbuild将依赖全转成esm",
       "为了提高后续页面的加载性能，Vite 将那些具有许多内部模块的 ESM 依赖项转换为单个模块",
       "对于有多个内置模块的依赖，大量请求会导致浏览器端的网络拥塞，使页面加载变得明显缓慢",
       "将这样的依赖预构建成单个模块，就只需要一个http请求",
     ];
-        consoleInfo(list, "依赖预构建");
+    consoleInfo(list, "依赖预构建");
   },
-  "为何不用 ESBuild 打包":()=>{
+  "为何不用 ESBuild 打包": () => {
     const list = [
       "vite目前的插件api不兼容esbuild,rollup提供了更好的权衡在性能与拓展性方面",
       "并且rollup也在着手改进性能",
     ];
     consoleInfo(list, "为何不用 ESBuild 打包");
-  }
+  },
+  promise执行顺序console: () => {
+    const list1 = [
+      `new Promise(resolve => {
+          console.log('test');
+          resolve();
+       });`,
+      "new promise在then之前都是同步的,会立即打印test",
+      `new Promise(resolve => {
+          resolve();
+          console.log('test');
+          reject();
+      });`,
+      `执行了resolve、打印"test"、reject，这3句代码都会执行，但是reject不会生效`,
+      "方法：从上往下执行，先执行同步代码，微任务放入一个队列，宏任务放入一个队列，promise.then之前都是同步的",
+    ];
+    consoleInfo(list1, "promise执行顺序console");
+    const test1 = `const first = () => (new Promise((resolve, reject) => {
+    console.log(3);
+    let p = new Promise((resolve, reject) => {
+        console.log(7);
+        setTimeout(() => {
+            console.log(5);
+            resolve();
+        }, 0);
+        resolve(1);
+    });
+    resolve(2);
+    p.then((arg) => {
+        console.log(arg);
+    });
+}));
+first().then((arg) => {
+    console.log(arg);
+});
+console.log(4);`;
+    //3, 7, 4, 1, 2, 5
+    highlightCode(test1);
+  },
 };
