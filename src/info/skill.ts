@@ -209,9 +209,10 @@ function throttle(func, duration) {
   动态规划: () => {
     const list = [
       "dp[i]代表什么:前i个的结果或者是以第i个结束的结果",
-      "需要注意如果有n个数据,要加上0的情况所以需要拿到dp[n],注意下标,不要取错了值",
+      "需要注意如果有n个数据,要加上0的情况所以需要拿到dp[n],给的参数注意下标,不要越界取错了值",
       "对于最简单的动态规划，尽可能补全初始值，直到判断不了，复杂的可能需要两个for循环",
     ];
+    consoleInfo(list, "动态规划");
   },
   "0/1背包": () => {
     const list = [
@@ -222,6 +223,7 @@ function throttle(func, duration) {
       "循环背包时逆序,因为只跟上方和左上方的数据有关,这个时候不能提前更新它",
     ];
     consoleInfo(list, "0/1背包");
+    console.log("先初始化数组,长度target+1,添加默认值,先遍历物品,后遍历背包");
     const codeSnippet = ` let dp=new Array(target+1).fill(false)
     dp[0]=true
     for(let i=0;i<nums.length;i++){
@@ -381,11 +383,8 @@ ajax('https://api.example.com/data')
     const list = [
       "get请求的请求参数会放在url之后，参数之间使用&符号连接。post则是放在请求体里",
       "并且浏览器对url的长度是有限制的",
-      "post因为请求参数放在请全体里相对安全一点",
+      "post因为请求参数放在请求体里相对安全一点",
       "get会被缓存，post不会，除非响应头包含适当的cache-control或expires",
-      "get产生一个tcp数据包，post产生两个tcp数据包",
-      "--------------------------------------",
-      "在发生跨域并且不是一个简单请求时，http会发送一个预检请求，用于检查服务器是否支持cors协议，并且是否允许使用特定的方法或标头",
     ];
     consoleInfo(list, "get/post的区别");
   },
@@ -426,41 +425,137 @@ ajax('https://api.example.com/data')
     consoleInfo(list, "为何不用 ESBuild 打包");
   },
   promise执行顺序console: () => {
+    // 第一部分：Promise的执行顺序和说明
     const list1 = [
       `new Promise(resolve => {
-          console.log('test');
-          resolve();
-       });`,
-      "new promise在then之前都是同步的,会立即打印test",
+      console.log('test');
+      resolve();
+    });`,
+      "new Promise在then之前都是同步的,会立即打印test",
       `new Promise(resolve => {
-          resolve();
-          console.log('test');
-          reject();
-      });`,
+      resolve();
+      console.log('test');
+      reject();
+    });`,
       `执行了resolve、打印"test"、reject，这3句代码都会执行，但是reject不会生效`,
       "方法：从上往下执行，先执行同步代码，微任务放入一个队列，宏任务放入一个队列，promise.then之前都是同步的",
     ];
+
     consoleInfo(list1, "promise执行顺序console");
-    const test1 = `const first = () => (new Promise((resolve, reject) => {
-    console.log(3);
-    let p = new Promise((resolve, reject) => {
+
+    // 第二部分：第一个Promise示例（复杂的Promise嵌套和微任务）
+    const test1 = `
+    const first = () => (new Promise((resolve, reject) => {
+      console.log(3);
+      let p = new Promise((resolve, reject) => {
         console.log(7);
         setTimeout(() => {
-            console.log(5);
-            resolve();
+          console.log(5);
+          resolve();
         }, 0);
         resolve(1);
-    });
-    resolve(2);
-    p.then((arg) => {
+      });
+      resolve(2);
+      p.then((arg) => {
         console.log(arg);
+      });
+    }));
+    first().then((arg) => {
+      console.log(arg);
     });
-}));
-first().then((arg) => {
-    console.log(arg);
-});
-console.log(4);`;
-    //3, 7, 4, 1, 2, 5
+    console.log(4);
+  `;
+    // 预期输出顺序：3, 7, 4, 1, 2, 5
     highlightCode(test1);
+
+    // 第三部分：关于async/await的注意点
+    const list2 = [
+      "async await,await之前的包括await这行都是同步执行,下面的进入微任务",
+      "async修饰的函数,如果不是返回一个promise,则会包装成一个已经fulfilled(resolve)的promise",
+      "函数return的是promise这种特殊情况，return意味着外层内容是等到return结果之后才执行的，return未完成，这个then就未完成",
+      "所以这个promsie会被加入微任务，但是对于async修饰的函数，并且不是返回promise，默认会被promise包装，这个promise不会进入微任务",
+    ];
+
+    consoleInfo(list2, "async await的注意点");
+
+    // 第四部分：async/await 示例代码
+    const test2 = `
+    async function async1() {
+      console.log('async1 start');
+      await async2();
+      console.log('async1 end');
+    }
+
+    async function async2() {
+      console.log('async2');
+    }
+
+    console.log('script start');
+    async1();
+    new Promise(function (resolve) {
+      console.log('promise1');
+      resolve();
+    }).then(function () {
+      console.log('promise2');
+    });
+    console.log('script end');
+  `;
+    // 预期输出顺序：script start、async1 start、async2、promise1、script end、async1 end、promise2
+    highlightCode(test2);
+
+    const test3 = `
+    async function async1() {
+      console.log('async1 start');
+      await async2();
+      console.log('async1 end');
+    }
+    async function async2() {
+      console.log('async2');
+      return new Promise((resolve, reject) => {
+        resolve()
+      });
+    }
+    console.log('script start');
+    async1();
+    new Promise(function (resolve) {
+      console.log('promise1');
+      resolve();
+    }).then(function () {
+      console.log('promise2');
+    });
+    console.log('script end');
+  `;
+    // 预期输出顺序：script start、async1 start、async2、promise1、script end、promise2、async1 end
+    highlightCode(test3);
+
+    const test4 = `
+    Promise.resolve().then(() => {
+      console.log(0);
+      return Promise.resolve(4);
+    }).then((res) => {
+      console.log(res)
+    });
+
+    Promise.resolve().then(() => {
+      console.log(1);
+    }).then(() => {
+      console.log(2);
+    }).then(() => {
+      console.log(3);
+    }).then(() => {
+      console.log(5);
+    }).then(() => {
+      console.log(6);
+    });
+  `;
+    highlightCode(test4);
+    // 预期输出顺序：0, 1, 2, 3, 4, 5, 6
+    // 备注说明：
+    // return意味着外层内容是等到return结果之后才执行的，这个promise默认会执行.then从而加入微任务
+    // return Promise.resolve(4)会占据两个微任务
+    // 参考文章链接：
+    // https://juejin.cn/post/7092396674693201956
+    // https://blog.csdn.net/qq_53109172/article/details/138552985
+    // https://juejin.cn/post/6945319439772434469#heading-31
   },
 };
