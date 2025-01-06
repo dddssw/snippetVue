@@ -208,7 +208,7 @@ function throttle(func, duration) {
   },
   动态规划: () => {
     const list = [
-      "dp[i]代表什么:前i个的结果或者是以第i个结束的结果",
+      "dp[i]代表什么:前i(下标)个的结果或者是以第i个结束的结果,背包问题最好是前i个，而不是下标",
       "需要注意如果有n个数据,要加上0的情况所以需要拿到dp[n],给的参数注意下标,不要越界取错了值",
       "对于最简单的动态规划，尽可能补全初始值，直到判断不了，复杂的可能需要两个for循环",
     ];
@@ -558,4 +558,53 @@ ajax('https://api.example.com/data')
     // https://blog.csdn.net/qq_53109172/article/details/138552985
     // https://juejin.cn/post/6945319439772434469#heading-31
   },
+  'this打印结果': () => {
+    const test1 = `
+    var a = 1;
+    var b = {
+        a: 2,
+        echo: () => {
+            console.log(this.a);
+        }
+    };
+    b.echo();
+    `;
+    highlightCode(test1);
+
+    const test2 = `
+    function a() {
+        let b = {
+            fn: () => {
+                console.log(this.data);
+            }
+        };
+        return b;
+    }
+
+    let c = {
+        data: 1,
+        a
+    };
+
+    let d = {
+        data: 2,
+        a
+    };
+
+    c.a().fn();
+    d.a().fn();
+    `;
+    highlightCode(test2);
+  },
+  "Vue响应式原理":()=>{
+    const list = [
+      "基于proxy",
+      "",
+      "",
+      "",
+    ]
+  },
+  "怎么forin一个对象":()=>{
+
+  }
 };

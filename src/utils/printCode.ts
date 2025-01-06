@@ -6,7 +6,7 @@ const variableStyle = chalk.cyan; // 变量名
 const stringStyle = chalk.yellow; // 字符串
 export function highlightCode(code) {
   console.log(code
-    .replace(/\b(function|let|const|return)\b/g, keywordStyle("$1")) // 高亮关键字
+    .replace(/\b(function|let|const|var|return)\b/g, keywordStyle("$1")) // 高亮关键字
     .replace(
       /\b(debounce|clearTimeout|setTimeout|apply|effect)\b/g,
       functionNameStyle("$1")
