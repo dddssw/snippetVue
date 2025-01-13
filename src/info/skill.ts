@@ -117,7 +117,30 @@ function throttle(func, duration) {
       "使用ts进行重写，在idea中的代码提示效果更好",
       "在性能方面，优化了模板编译和diff算法，并且支持树摇，打包体积进一步缩小",
     ];
-    consoleInfo(list, "vue3与vue2的不同");
+    consoleInfo(list, "vue2与vue3的不同");
+    const list1 = [
+      "Vue2的响应式原理是基于Object.defineProperty,通过把data返回的对象作为target",
+      "这样不管是简单数据类型还是复杂数据类型，都可以通过这个api监听getter和setter",
+      "但是它只能监听指定对象的指定属性，所以对于复杂数据类型需要递归监听",
+      "当给响应式数据动态新增数据，会出现响应式丢失的问题，因此Vue2提供了一个$set",
+      "并且当时proxy的兼容性不好",
+    ];
+    consoleInfo(list1, "响应式原理的不同");
+  },
+  vue的响应式原理: () => {
+    const list = [
+      "主要通过两个api reactive和ref",
+      "对于ref注册的响应式数据，他有一个访问器属性value，getter时收集依赖，setter时派发更新",
+      "对于setter中的value，使用toReactive进行处理，首先判断value是不是Object，如果不是直接返回，否则会调用reactive使value变成响应式数据",
+      "而reactive基于proxy，它接受两个参数，第一个参数是原始对象，第二个参数是一组traps,对于reative里面包含get set deleteProperty has ownKeys这些traps",
+      "在get中进行track依赖收集，如果value是个Object，会递归调用reactive实现深度监听，如果是个ref类型，会进行自动解包",
+      "在set中处理新增和修改属性，进行trigger派发更新",
+      "在deleteProperty处理删除属性，触发trigger",
+      "在has拦截in操作符，触发track",
+      "在ownKeys拦截forin,触发track",
+      "通过配置这些traps可以进一步实现shallowReactive和readonly",
+    ];
+    consoleInfo(list, "vue的响应式原理");
   },
   "watch/watcheffect": () => {
     const list = [
@@ -558,7 +581,7 @@ ajax('https://api.example.com/data')
     // https://blog.csdn.net/qq_53109172/article/details/138552985
     // https://juejin.cn/post/6945319439772434469#heading-31
   },
-  'this打印结果': () => {
+  this打印结果: () => {
     const test1 = `
     var a = 1;
     var b = {
@@ -596,15 +619,83 @@ ajax('https://api.example.com/data')
     `;
     highlightCode(test2);
   },
-  "Vue响应式原理":()=>{
+  "怎么使用 for...of 遍历一个对象": () => {
     const list = [
-      "基于proxy",
-      "",
-      "",
-      "",
-    ]
-  },
-  "怎么forin一个对象":()=>{
+      "for...of 只能遍历可迭代对象，如果遍历对象",
+      "需要实现一个 Symbol.iterator 方法",
+      "当 for...of 启动时会调用这个方法，这个方法必须返回一个迭代器，一个有 next 方法的对象",
+      "当循环希望获得下一个值，会调用这个 next 方法",
+      "next 返回的结果格式必须是 {done: boolean, value: any}，当 done 为 true，代表循环结束",
+    ];
 
-  }
+    // 使用 consoleInfo 显示相关信息
+    consoleInfo(list, "怎么使用 for...of 遍历一个对象");
+
+    const codeSnippet = `
+    let a = {
+        start: 1, // 起始值
+        end: 4,   // 结束值
+        // 实现 Symbol.iterator 方法使得对象可迭代
+        [Symbol.iterator]() {
+            let current = this.start; // 当前值从 start 开始
+            return {
+                next: () => {
+                    if (current <= this.end) {
+                        // 如果当前值在范围内，返回 {done: false, value: current++}
+                        return { done: false, value: current++ };
+                    } else {
+                        // 否则返回 {done: true}，表示结束
+                        return { done: true };
+                    }
+                }
+            };
+        }
+    };
+
+    // 使用 for...of 遍历对象
+    for (let value of a) {
+        console.log(value); // 输出: 1, 2, 3, 4
+    }
+    `;
+
+    // 高亮代码显示
+    highlightCode(codeSnippet);
+  },
+  //vue源码系列
+  computed原理: () => {
+    const list = [
+      "使用computed会返回一个对象，它也有一个访问器属性value，初始化时会执行一遍里面的回调函数，搜集依赖",
+      "并且还有两个属性dirty和value,dirty初始化设置为true，代表需要重新执行回调，value则是回调return的值",
+      "当computed依赖的响应式数据发生变化，dirty被设置为true，当触发getter时会重新执行回调，并更新value，将新值返回",
+      "如果依赖没有改变，触发getter不会重新执行回调，而是返回缓存的value",
+      "",
+    ];
+    consoleInfo(list, "computed原理");
+  },
+  nextTick原理: () => {
+    const list = [
+      "这跟vue的异步更新队列有关，vue会同步将任务放进任务队列，在微任务中执行任务队列",
+      "因此要获取最新的dom，需要在微任务执行后再执行",
+      "nextTick就是通过promise的链式调用，将nextTick里的回调放在上面的微任务.then里执行",
+    ];
+    consoleInfo(list, "nextTick原理");
+  },
+  watch原理: () => {
+    const list = [
+      "首先会将watch的第一个参数标准化，也就是getter函数的形式，通过ReactiveEffect创建一个effect对象，构造函数的参数是getter函数，effect的调度器函数则是watch中的回调，触发track收集依赖",
+      "当响应式数据发生改变，触发trigger派发更新，执行effect里的调度器函数，并且还会执行effect.run获取新值。旧值通过闭包拿到，将新旧值做为回调的参数",
+      "通过源码可以发现，watch监听ref reactive数据类型是不同的，当是reactive类型，默认会调用traverse进行深度监听,对于ref类型，不会进行深度监听，通过设置deep：true能实现深度监听",
+      "对于immediate，默认是false，不会执行effect的调度器函数",
+      "对于flush，这跟组件的更新时机有关系，默认是pre,也就是在父组件更新之后，子组件更新之前执行，post是在组件更新之后，sync则是同步执行",
+      "watchEffect都是基于doWatch方法，不同点是回调为null，配置也只有flush",
+    ];
+    consoleInfo(list, "watch原理");
+  },
+  keepalive原理: () => {
+    const list = [
+      "卸载时并不会真的卸载，而是移动到一个隐藏容器里，挂载时也不是真的挂载，而是从隐藏容器中取出放在页面上",
+      "keepalive有一个特殊标识表明他是缓存组件,keepalive通过ctx实现与渲染器的通信，keepalive会在ctx上实现activate/deactivate,",
+    ];
+    consoleInfo(list, "keepalive原理");
+  },
 };
